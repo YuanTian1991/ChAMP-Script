@@ -1,0 +1,4 @@
+IlluminaHumanMethylationManifests/*.csv filter=lfs diff=lfs merge=lfs -text
+IlluminaHumanMethylationManifests/HumanMethylation450_15017482_v1-2.csv filter=lfs diff=lfs merge=lfs -text
+IlluminaHumanMethylationManifests/MethylationEPIC_v-1-0_B4.csv filter=lfs diff=lfs merge=lfs -text
+IlluminaHumanMethylationManifests/infinium-methylationepic-v-1-0-b5-manifest-file.csv filter=lfs diff=lfs merge=lfs -text
