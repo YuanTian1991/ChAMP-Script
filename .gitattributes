@@ -1,4 +1,4 @@
-IlluminaHumanMethylationManifests/*.csv filter=lfs diff=lfs merge=lfs -text
-IlluminaHumanMethylationManifests/HumanMethylation450_15017482_v1-2.csv filter=lfs diff=lfs merge=lfs -text
-IlluminaHumanMethylationManifests/MethylationEPIC_v-1-0_B4.csv filter=lfs diff=lfs merge=lfs -text
-IlluminaHumanMethylationManifests/infinium-methylationepic-v-1-0-b5-manifest-file.csv filter=lfs diff=lfs merge=lfs -text
+Illumina_Methylation_Manifests/HumanMethylation450_15017482_v1-2.csv filter=lfs diff=lfs merge=lfs -text
+Illumina_Methylation_Manifests/MethylationEPIC_v-1-0_B4.csv filter=lfs diff=lfs merge=lfs -text
+Illumina_Methylation_Manifests/Infinium_Mouse_Methylation_v1.0_A1_GS[[:space:]]Manifest_File.csv filter=lfs diff=lfs merge=lfs -text
+Illumina_Methylation_Manifests/infinium-methylationepic-v-1-0-b5-manifest-file.csv filter=lfs diff=lfs merge=lfs -text
