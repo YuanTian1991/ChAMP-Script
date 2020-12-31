@@ -7,3 +7,10 @@ During runing ChAMP, some users required some extra features like paired calcula
 **champ.PairedDMR.R**: Using bumphunter algorithm to get paired DMR result.
 
 **MatchSample.R**: To help user to find mismatched sample between pd csv file and IDAT folder.
+
+**champ.Anno.R**: Convert Illumina origin CSV file to ChAMP Annotation.
+
+**champ.unfoldDMR.R**: Unfold generate DMR result.
+
+**champ.SlimCombat.R**: A quick and short function to do Combat, need to be polished.
+
