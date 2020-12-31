@@ -76,5 +76,5 @@ champ.Anno <- function(manifest_directory)
     rownames(CpGAnno) <- CpGAnno$IlmnID
     CpGAnno <- CpGAnno[rownames(ProbeInfo), ]
     
-    return Anno <- list(ProbeInfo=ProbeInfo, CpGAnno=CpGAnno, ControlProbe=ControlProbe)
+    return(list(ProbeInfo=ProbeInfo, CpGAnno=CpGAnno, ControlProbe=ControlProbe))
 }
