@@ -14,3 +14,6 @@ During runing ChAMP, some users required some extra features like paired calcula
 
 **champ.SlimCombat.R**: A quick and short function to do Combat, need to be polished.
 
+**champ.GeneFeatures.R**: A function to generate gene features like promoter, 1 exon, intron, 5UTR, 3UTR from raw UCSC RefGene.
+
+

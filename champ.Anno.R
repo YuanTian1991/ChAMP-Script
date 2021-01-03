@@ -10,7 +10,7 @@ champ.Anno <- function(manifest_directory)
     skipline <- which(substr(readLines(manifest_directory),1,7) == "[Assay]")
     Manifest <- read.csv(manifest_directory, head=T, sep=",", skip=skipline, as.is=T)
     
-    Anno <- Manifest[,c(1,3,5,7,9)]
+    Anno <- Manifest[,c("IlmnID", "AddressA_ID", "AddressB_ID", "Infinium_Design_Type", "Color_Channel")]
     message("Total Rows in this manifest: ", nrow(Anno))
     
     message("There are totally 3 types of Probes, Type-II, Type-I-Green and Type-I-Red")
