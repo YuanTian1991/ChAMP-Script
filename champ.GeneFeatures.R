@@ -7,7 +7,7 @@ library(stringr)
 
 champ.GeneFeatures <- function(db = 'hg19', 
                                promoterRange=c(2000, 2000), 
-                               features=c("enhancer","promoter", "TSS200_1500", "UTR5", "UTR3", "Exons", "Introns"))
+                               features=c("Enhancer","Promoter", "TSS200_1500", "UTR5", "UTR3", "Exons", "Introns"))
 {
     
     message("Fetch ",db , " refGene from UCSC mySQL database.")
@@ -20,21 +20,21 @@ champ.GeneFeatures <- function(db = 'hg19',
 
     result <- list()
     
-    if(any(c("promoter", "enhancer") %in% features)){
+    if(any(c("Promoter", "Enhancer") %in% features)){
         message("Generate Promoter: Upstream ", promoterRange[1], " to Downstream ", promoterRange[2], " around TSS.")
         RefInfo <- refGene[,c("chrom", "txStart", "txEnd", "strand", "name", "name2", "rank")]
         colnames(RefInfo) <- c("seqnames", "start", "end", "strand", "id", "symbol", "rank")
         Ref.gr <- makeGRangesFromDataFrame(RefInfo, keep.extra.columns=TRUE)
         Promoter <- as.data.frame(promoters(Ref.gr,upstream=promoterRange[1], downstream=promoterRange[2]))
-        Promoter$feature <- "promoter"
+        Promoter$feature <- "Promoter"
         result$Promoter = Promoter
     }
     
-    if("enhancer" %in% features) {
+    if("Enhancer" %in% features) {
         message("Generate Enhancer: Upstream 2000 to Promoter.")
         promoter.gr <- makeGRangesFromDataFrame(Promoter, keep.extra.columns=TRUE)
         Enhancer <- as.data.frame(promoters(promoter.gr, upstream=2000, downstream=0))
-        Enhancer$feature <- "enhancer"
+        Enhancer$feature <- "Enhancer"
         result$Enhancer = Enhancer
     }
     
