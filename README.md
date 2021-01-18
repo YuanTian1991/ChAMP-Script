@@ -16,4 +16,7 @@ During runing ChAMP, some users required some extra features like paired calcula
 
 **champ.GeneFeatures.R**: A function to generate gene features like promoter, 1 exon, intron, 5UTR, 3UTR from raw UCSC RefGene.
 
+**champ.getTFPeaks.R**: A function to get Transcript Factor peaks from TFregulomeR package. The result should be feed to champ.TFEA.R function.
+
+**./champ.TFEA.R**: A function to do Trnascript Factor Binding Site Enrichment Analysis (TFEA) for a list of Region of Interest (ROI), like genes, promoters, differential methylated regions, differential hydroxty-methylated regions .etc.
 
