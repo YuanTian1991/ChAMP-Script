@@ -1,6 +1,8 @@
 # This is a script I wrote to do TFEA between TFregulomeR and DhMR from Mouse Intestine
 
-library(GenomicRanges)
+library("GenomicRanges")
+library("ggplot2")
+library("ggrepel")
 
 champ.TFEA <- function(myROI, myRandomRegion, myTFPeaks)
 {
@@ -40,6 +42,14 @@ champ.TFEA <- function(myROI, myRandomRegion, myTFPeaks)
     TFList <- TFList[order(TFList$pValue), ]
 
     PeakOV <- myTFEA[TFList$ID]
+    
+    message("Plotting ScatterPlot for each TF's number of overlapped peak with ROI, and -log10(P value)")
+    ScatterPlot <- ggplot(df, aes(x = ROIHits, y = -log10(pValue))) +
+        geom_point(size = 1) +
+        labs(x = paste("Number of regions enriched by TF among " ,nrow(myROI), "ROIs")) +
+        theme_minimal(base_size = 14) +
+        geom_text_repel(data = df[1:20, ], aes(label = TF),
+                        size = 3.5, box.padding = unit(0.35, "lines"), point.padding = unit(0.3, "lines"))
 
-    return(list(TFList=TFList, PeakOV=PeakOV))
+    return(list(TFList=TFList, PeakOV=PeakOV, ScatterPlot=ScatterPlot))
 }
