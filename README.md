@@ -18,5 +18,6 @@ During runing ChAMP, some users required some extra features like paired calcula
 
 **champ.getTFPeaks.R**: A function to get Transcript Factor peaks from TFregulomeR package. The result should be feed to champ.TFEA.R function.
 
-**./champ.TFEA.R**: A function to do Trnascript Factor Binding Site Enrichment Analysis (TFEA) for a list of Region of Interest (ROI), like genes, promoters, differential methylated regions, differential hydroxty-methylated regions .etc.
+**champ.TFEA.R**: A function to do Transcript Factor Binding Site Enrichment Analysis (TFEA) for a list of Region of Interest (ROI), like genes, promoters, differential methylated regions, differential hydroxty-methylated regions .etc.
 
+**champ.PeakEnrich.R**: A function to do peak set enrichment, currently only support MAnorm2 preprocessed ChIP-seq, actually only validated on MeDIP-seq and hMeDIP-seq.
