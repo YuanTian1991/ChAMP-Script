@@ -1,31 +1,34 @@
-# A script to convert UCSC MySQL refGene into gene features for mapping.
+# A script to convert UCSC MySQL knownGene and wgEncodeGencodeComp into gene features for mapping.
 # Author: Tian
 
 library(RMySQL)
 library(GenomicRanges)
 library(stringr)
+library(glue)
 
-champ.GeneFeatures <- function(db = 'hg19', 
+# for track parameter: knownGene, wgEncodeGencodeCompV39
+champ.GeneFeatures <- function(db = 'hg38', 
+                               track = 'knownGene',
                                promoterRange=c(2000, 2000), 
                                features=c("Enhancer","Promoter", "TSS200_1500", "UTR5", "UTR3", "Exons", "Introns"))
 {
     
-    message("Fetch ",db , " refGene from UCSC mySQL database.")
+    message(glue("Fetch {db} {track} from UCSC mySQL database."))
     con_ucsc <- dbConnect(RMySQL::MySQL(), db = db, user = "genome", host = "genome-mysql.soe.ucsc.edu")
-    refGene <- suppressWarnings(dbGetQuery(con_ucsc, stringr::str_interp("SELECT * FROM refGene")))
+    hgTable <- suppressWarnings(dbGetQuery(con_ucsc, stringr::str_interp(glue("SELECT * FROM {track}"))))
     dbDisconnect(con_ucsc)
     
-    refGene <- refGene[order(refGene$chrom, refGene$txStart), ]
-    refGene$rank <- 1:nrow(refGene)
+    hgTable <- hgTable[order(hgTable$chrom, hgTable$txStart), ]
+    hgTable$rank <- 1:nrow(hgTable)
 
     result <- list()
     
     if(any(c("Promoter", "Enhancer") %in% features)){
-        message("Generate Promoter: Upstream ", promoterRange[1], " to Downstream ", promoterRange[2], " around TSS.")
-        RefInfo <- refGene[,c("chrom", "txStart", "txEnd", "strand", "name", "name2", "rank")]
-        colnames(RefInfo) <- c("seqnames", "start", "end", "strand", "id", "symbol", "rank")
+        message(glue("Generate Promoter: Upstream {promoterRange[1]} to Downstream {promoterRange[2]} around TSS."))
+        RefInfo <- hgTable[,c("chrom", "txStart", "txEnd", "strand", "name", "rank")]
+        colnames(RefInfo) <- c("seqnames", "start", "end", "strand", "id", "rank")
         Ref.gr <- makeGRangesFromDataFrame(RefInfo, keep.extra.columns=TRUE)
-        Promoter <- as.data.frame(promoters(Ref.gr,upstream=promoterRange[1], downstream=promoterRange[2]))
+        Promoter <- as.data.frame(GenomicRanges::promoters(Ref.gr,upstream=promoterRange[1], downstream=promoterRange[2]))
         Promoter$feature <- "Promoter"
         Promoter$InternalRank <- 2
         Promoter$InternalRank[Promoter$strand == '-'] <- 10004
@@ -35,7 +38,7 @@ champ.GeneFeatures <- function(db = 'hg19',
     if("Enhancer" %in% features) {
         message("Generate Enhancer: Upstream 2000 to Promoter.")
         promoter.gr <- makeGRangesFromDataFrame(Promoter, keep.extra.columns=TRUE)
-        Enhancer <- as.data.frame(promoters(promoter.gr, upstream=2000, downstream=0))
+        Enhancer <- as.data.frame(GenomicRanges::promoters(promoter.gr, upstream=2000, downstream=0))
         Enhancer$feature <- "Enhancer"
         Enhancer$InternalRank <- 1
         Enhancer$InternalRank[Enhancer$strand == '-'] <- 10005
@@ -44,21 +47,19 @@ champ.GeneFeatures <- function(db = 'hg19',
     
     if("TSS200_1500" %in% features) {
         message("Generate TSS200: Upstream 200 of TSS.")
-        RefInfo <- refGene[,c("chrom", "txStart", "txEnd", "strand", "name", "name2", "rank")]
-        colnames(RefInfo) <- c("seqnames", "start", "end", "strand", "id", "symbol", "rank")
+        RefInfo <- hgTable[,c("chrom", "txStart", "txEnd", "strand", "name", "rank")]
+        colnames(RefInfo) <- c("seqnames", "start", "end", "strand", "id", "rank")
         Ref.gr <- makeGRangesFromDataFrame(RefInfo, keep.extra.columns=TRUE)
-        TSS200 <- as.data.frame(promoters(Ref.gr,upstream=200, downstream=0))
+        TSS200 <- as.data.frame(GenomicRanges::promoters(Ref.gr,upstream=200, downstream=0))
         TSS200$feature <- "TSS200"
         TSS200$InternalRank <- 4
         TSS200$InternalRank[TSS200$strand == '-'] <- 10002
         result$TSS200 <- TSS200
         
         message("Generate TSS1500: Upstream 200 to 1500 of TSS.")
-        TSS1500 <- as.data.frame(promoters(Ref.gr,upstream=1500, downstream=0))
+        TSS200.gr <- makeGRangesFromDataFrame(TSS200, keep.extra.columns=TRUE)
+        TSS1500 <- as.data.frame(GenomicRanges::promoters(TSS200.gr, upstream=1300, downstream=0))
         TSS1500$feature <- "TSS1500"
-        TSS1500[TSS1500$strand == '+', "end"] <- TSS200[TSS200$strand == '+', "start"]
-        TSS1500[TSS1500$strand == '-', "start"] <- TSS200[TSS200$strand == '-', "end"]
-        TSS1500$width <- 1300
         TSS1500$InternalRank <- 3
         TSS1500$InternalRank[TSS1500$strand == '-'] <- 10003
         result$TSS1500 <- TSS1500
@@ -67,7 +68,7 @@ champ.GeneFeatures <- function(db = 'hg19',
     if("UTR5" %in% features) {
         message("Generate 5'UTR: TSS to CDS Start Site.")
 
-        strandPositive <- refGene[refGene$strand == "+",]
+        strandPositive <- hgTable[hgTable$strand == "+",]
 
         UTR5Positive <- data.frame(seqnames=strandPositive$chrom,
                            start=strandPositive$txStart,
@@ -75,13 +76,13 @@ champ.GeneFeatures <- function(db = 'hg19',
                            width=strandPositive$cdsStart - strandPositive$txStart,
                            strand=strandPositive$strand,
                            id=strandPositive$name,
-                           symbol=strandPositive$name2,
+                           # symbol=strandPositive$name2,
                            rank=strandPositive$rank,
                            feature="UTR5",
                            InternalRank=5
         )
 
-        strandNegative <- refGene[refGene$strand == "-",]
+        strandNegative <- hgTable[hgTable$strand == "-",]
 
         UTR5Negative <- data.frame(seqnames=strandNegative$chrom,
                            start=strandNegative$cdsEnd,
@@ -89,7 +90,7 @@ champ.GeneFeatures <- function(db = 'hg19',
                            width=strandNegative$txEnd - strandNegative$cdsEnd,
                            strand=strandNegative$strand,
                            id=strandNegative$name,
-                           symbol=strandNegative$name2,
+                           # symbol=strandNegative$name2,
                            rank=strandNegative$rank,
                            feature="UTR5",
                            InternalRank=10001
@@ -102,7 +103,7 @@ champ.GeneFeatures <- function(db = 'hg19',
     if("UTR3" %in% features) {
         message("Generate 3'UTR: CDS End Site to Gene End.")
 
-        strandPositive <- refGene[refGene$strand == "+",]
+        strandPositive <- hgTable[hgTable$strand == "+",]
 
         UTR3Positive <- data.frame(seqnames=strandPositive$chrom,
                            start=strandPositive$cdsEnd,
@@ -110,13 +111,12 @@ champ.GeneFeatures <- function(db = 'hg19',
                            width=strandPositive$txEnd - strandPositive$cdsEnd,
                            strand=strandPositive$strand,
                            id=strandPositive$name,
-                           symbol=strandPositive$name2,
+                           # symbol=strandPositive$name2,
                            rank=strandPositive$rank,
                            feature="UTR3",
-                           InternalRank=9999
-        )
+                           InternalRank=9999)
 
-        strandNegative <- refGene[refGene$strand == "-",]
+        strandNegative <- hgTable[hgTable$strand == "-",]
 
         UTR3Negative <- data.frame(seqnames=strandNegative$chrom,
                            start=strandNegative$txStart,
@@ -124,11 +124,10 @@ champ.GeneFeatures <- function(db = 'hg19',
                            width=strandNegative$cdsStart - strandNegative$txStart,
                            strand=strandNegative$strand,
                            id=strandNegative$name,
-                           symbol=strandNegative$name2,
+                           # symbol=strandNegative$name2,
                            rank=strandNegative$rank,
                            feature="UTR3",
-                           InternalRank=9
-        )
+                           InternalRank=9)
         UTR3 <- rbind(UTR3Positive, UTR3Negative)
         UTR3 <- UTR3[order(UTR3$rank), ]
         result$UTR3 <- UTR3
@@ -137,9 +136,9 @@ champ.GeneFeatures <- function(db = 'hg19',
     if("Exons" %in% features)
     {
         message("Generate Exons: From each exonStarts to each exonEnds.")
-        Exons <- suppressWarnings(do.call('rbind', apply(refGene, 1, function(x) {
+        Exons <- suppressWarnings(do.call('rbind', apply(hgTable, 1, function(x) {
 
-                                                       names(x) <- colnames(refGene)
+                                                       names(x) <- colnames(hgTable)
 
                                                        exonStarts <- as.numeric(strsplit(x["exonStarts"], split=",")[[1]])
                                                        exonEnds <- as.numeric(strsplit(x["exonEnds"], split=",")[[1]])
@@ -156,7 +155,7 @@ champ.GeneFeatures <- function(db = 'hg19',
                                                                   width=exonEnds - exonStarts,
                                                                   strand=x["strand"],
                                                                   id=x["name"],
-                                                                  symbol=x["name2"],
+                                                                  # symbol=x["name2"],
                                                                   rank=as.numeric(x["rank"]),
                                                                   feature=exonFeatures,
                                                                   InternalRank=100
@@ -166,8 +165,8 @@ champ.GeneFeatures <- function(db = 'hg19',
 
     if("Introns" %in% features){
         message("Generate Introns: From each exonEnds to next exonStarts, and gaps between cds and exons.")
-        Introns <-  suppressWarnings(do.call('rbind', apply(refGene, 1, function(x) {
-                                                          names(x) <- colnames(refGene)
+        Introns <-  suppressWarnings(do.call('rbind', apply(hgTable, 1, function(x) {
+                                                          names(x) <- colnames(hgTable)
 
                                                           exonEnds <- as.numeric(strsplit(x["exonEnds"], split=",")[[1]])
                                                           exonStarts <- as.numeric(strsplit(x["exonStarts"], split=",")[[1]])
@@ -205,7 +204,7 @@ champ.GeneFeatures <- function(db = 'hg19',
                                                                      width=IntronEnds - IntronStarts,
                                                                      strand=x["strand"],
                                                                      id=x["name"],
-                                                                     symbol=x["name2"],
+                                                                     # symbol=x["name2"],
                                                                      rank=as.numeric(x["rank"]),
                                                                      feature=IntronFeatures,
                                                                      InternalRank=100
