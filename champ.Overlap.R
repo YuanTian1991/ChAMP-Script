@@ -8,7 +8,7 @@ ConcatCharacterArray <- function(x) {
     paste(x, collapse=";")
 }
 
-champ.Overlap <- function(x,
+champ.overlap <- function(x,
                           y,
                           yAttributes=c("feature", "transcriptClass", "geneSymbol"),
                           collapseFunctions=list(ConcatCharacterArray, ConcatCharacterArray, ConcatCharacterArray))
