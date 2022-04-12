@@ -4,16 +4,9 @@
 library("GenomicRanges")
 library("data.table")
 
-# load("../Tmp/Peaks_SubAnno.RData")
-
 ConcatCharacterArray <- function(x) {
     paste(x, collapse=";")
 }
-
-# x <- peaks
-# y <- subAnno
-# yAttributes=c("feature", "transcriptClass", "geneSymbol")
-# collapseFunctions=c(ConcatCharacterArray, ConcatCharacterArray, ConcatCharacterArray)
 
 champ.Overlap <- function(x,
                           y,
