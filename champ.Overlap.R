@@ -28,11 +28,13 @@ champ.Overlap <- function(x,
     message("Collapse y for each x.")
     ovXResult.dt <- ovY.dt[, .(.N, yIndexList = paste(yIndex, collapse=";")), by = .(xIndex)]
 
-    for(i in 1:length(yAttributes)) {
-        message("Collapsing ", yAttributes[i], " ...")
-        ovY.dt[, "tmpColumn" := ovY.dt[, get(yAttributes[i])]]
-        tmp.dt <- ovY.dt[, .(collapseFunctions[[i]](tmpColumn)), by = .(xIndex)]
-        ovXResult.dt <- merge(ovXResult.dt, tmp.dt)
+    if(length(yAttributes) > 0) {
+        for(i in 1:length(yAttributes)) {
+            message("Collapsing ", yAttributes[i], " ...")
+            ovY.dt[, "tmpColumn" := ovY.dt[, get(yAttributes[i])]]
+            tmp.dt <- ovY.dt[, .(collapseFunctions[[i]](tmpColumn)), by = .(xIndex)]
+            ovXResult.dt <- merge(ovXResult.dt, tmp.dt)
+        }
     }
 
     message("Prepare data frame for return.")
