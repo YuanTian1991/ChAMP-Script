@@ -3,7 +3,6 @@
 # Author: Tian
 
 library("GenomicRanges")
-library("dqrng")
 library("data.table")
 
 # load("../65.MAnormSmallBin/M.RData")
@@ -50,7 +49,7 @@ champ.PeakEnrich <- function(SigPeaks, AllPeaks, CandidateRegion, SampleTime = 1
   RandomMatrix <- list()
   for (i in 1:(SampleTime / 50)) {
     message("Generating Null Distribution Data: ", i * 50, "/", SampleTime)
-    RandomMatrix[[i]] <- rowsum(matrix(dqsample(AllPeaks, nrow(SigPeakOV.dt) * 50, replace = TRUE), ncol = 50), SigPeakOV.dt$cl)
+    RandomMatrix[[i]] <- rowsum(matrix(sample(AllPeaks, nrow(SigPeakOV.dt) * 50, replace = TRUE), ncol = 50), SigPeakOV.dt$cl)
   }
 
   nulldistribution <- do.call("cbind", RandomMatrix)
