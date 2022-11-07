@@ -7,6 +7,11 @@
 
 if(getRversion() >= "3.1.0") utils::globalVariables(c("myNorm","myLoad","probe.features.epic","probe.features"))
 
+library("limma")
+library("doParallel")
+library("bumphunter")
+source("https://raw.githubusercontent.com/YuanTian1991/ChAMP-Script/master/champ.PairedDMP.R")
+
 champ.PairedDMR <- function(beta = myNorm,
                             pair = NULL,
                             pheno = myLoad$pd$Sample_Group,
@@ -109,7 +114,7 @@ champ.PairedDMR <- function(beta = myNorm,
 
     # bootstrap or permuation 
     message("[Paired DMR] Applying Permutations.")
-    probe_permutation <- replicate(B,sample(rawBeta))
+    probe_permutation <- as.data.frame(matrix(replicate(B,sample(rawBeta)), ncol=B))
 
     # Computing Marginals
     greaterOrEqual <- function(x,y) {
@@ -141,7 +146,7 @@ champ.PairedDMR <- function(beta = myNorm,
     message("[Paired DMR] Computing regions for each Permutation.")
     chunksize <- ceiling(B/cores)
     subMat <- NULL
-    nulltabs <- foreach(subMat = iter(permBeta, by = "col", chunksize = chunksize),.combine = "c", .packages = "bumphunter") %dorng% {
+    nulltabs <- foreach(subMat = iter(permBeta, by = "col", chunksize = chunksize),.combine = "c", .packages = "bumphunter") %dopar% {
     apply(subMat, 2, regionFinder, chr = chr, pos = pos,cluster = cluster, cutoff = cutoff,verbose = FALSE)}
 
         # Calulcate p value and FWER.
