@@ -3,6 +3,7 @@ library("data.table")
 library("tidyverse")
 library("glue")
 library("magrittr")
+library("stringr")
 
 
 manifest_dir <- "./MethylationEPIC v2.0 Files/EPIC-8v2-0_A1.csv"
@@ -45,4 +46,42 @@ message("Done")
 
 Anno <- list(Annotation=cpg_anno, ControlProbe=controls_anno)
 save(Anno, file="AnnoEPICv2.rda")
+
+
+message("Creating probe.features R object...")
+cpg <- fread(manifest_dir, skip=7, nrows =control_line-assay_line-2)
+
+probe.features <- cpg[, c("CHR", 
+                          "MAPINFO", 
+                          "Strand_FR", 
+                          "Infinium_Design_Type", 
+                          "UCSC_RefGene_Name",
+                          "UCSC_RefGene_Group",
+                          "Relation_to_UCSC_CpG_Island",
+                          "Relation_to_UCSC_CpG_Island",
+                          "UCSC_CpG_Islands_Name",
+                          "Name"), with=FALSE] %>%
+  magrittr::set_colnames(c('CHR', 'MAPINFO', 'Strand', 'Type', 'gene', 'feature', 
+                           'cgi', 'feat.cgi', 'UCSC_Islands_Name', 'Name'))
+
+
+message("Formating gene...")
+probe.features[, gene:=word(gene, start = 1, sep="[;]")]
+
+message("Formating feature (TSS200 .etc)")
+probe.features[, feature:=word(feature, start = 1, sep="[;]")] %>%
+  .[str_detect(feature, "exon"), feature:="Exon"] %>%
+  .[feature == "", feature:="Unknow"]
+
+message("Formating cgi (Island/Shore/Shelf .etc)")
+probe.features[, cgi:=word(cgi, start = 1, sep="[;]")] %>%
+  .[str_detect(cgi, "Shelf"), cgi:="Shelf"] %>%
+  .[str_detect(cgi, "Shore"), cgi:="Shore"] %>%
+  .[cgi == "", cgi:="OpenSea"]
+
+
+probe.features[, `feat.cgi`:=paste(feature, cgi, sep="-")]
+probe.features <- as.data.frame(probe.features) %>% magrittr::set_rownames(cpg$IlmnID)
+
+save(probe.features, file="probe.features.epicv2.rda")
 
