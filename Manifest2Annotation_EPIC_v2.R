@@ -85,3 +85,16 @@ probe.features <- as.data.frame(probe.features) %>% magrittr::set_rownames(cpg$I
 
 save(probe.features, file="probe.features.epicv2.rda")
 
+
+EPICv2_Mask <- fread("./EPICv2.hg38.mask.tsv")
+pop <- ex_between(EPICv2_Mask$maskUniq, "_SNP_", "_")
+pop_names <- unlist(pop) %>% unique %>% keep(~!is.na(.x))
+pop <- do.call("rbind", lapply(pop, function(x) pop_names %in% x))
+colnames(pop) <- paste0("MASK_general_", pop_names)
+
+Mask <- data.frame(probeID=EPICv2_Mask$Probe_ID, pop, MASK_general=EPICv2_Mask$M_general)
+rownames(Mask) <- Mask$probeID
+
+save(Mask, file="EPICv2_Mask.rda")
+
+
