@@ -17,8 +17,8 @@ champ.ImportIDAT <- function(directory = getwd(), offset = 100, arraytype="450K"
   
   idat_files <- dir(directory, pattern = "*.idat$", recursive = TRUE, full.names = TRUE)
   
-  GrnPath <- idat_files[str_detect(idat_files, "_Grn.idat")] %>% sort %>% .[1:10]
-  RedPath <- idat_files[str_detect(idat_files, "_Red.idat")] %>% sort %>% .[1:10]
+  GrnPath <- idat_files[str_detect(idat_files, "_Grn.idat")] %>% sort
+  RedPath <- idat_files[str_detect(idat_files, "_Red.idat")] %>% sort
   
   G.idats <- lapply(GrnPath, function(x){ message("  Loading:",x," ---- (",which(GrnPath == x),"/",length(GrnPath),")");readIDAT(x)})
   R.idats <- lapply(RedPath, function(x){ message("  Loading:",x," ---- (",which(RedPath == x),"/",length(RedPath),")");readIDAT(x)})
