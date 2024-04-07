@@ -65,10 +65,10 @@ champ.PairedDMP <- function(beta = myNorm,
     message("You have found ",sum(PairedDMP$adj.P.Val <= adjPVal), " significant paired DMPs with a ",adjust.method," adjusted P-value below ", adjPVal,".")
     message("\n<< Calculate Paired DMP successfully. >>")
 
-    if(arraytype == "EPIC") data(probe.features.epic) else data(probe.features)
-    com.idx <- intersect(rownames(PairedDMP),rownames(probe.features))
-    avg.substract <- rowMeans(beta.sub[com.idx,])
-    PairedDMP <- data.frame(PairedDMP[com.idx,],Ave_Sub=avg.substract,probe.features[com.idx,])
+    # if(arraytype == "EPIC") data(probe.features.epic) else data(probe.features)
+    # com.idx <- intersect(rownames(PairedDMP),rownames(probe.features))
+    # avg.substract <- rowMeans(beta.sub[com.idx,])
+    # PairedDMP <- data.frame(PairedDMP[com.idx,],Ave_Sub=avg.substract,probe.features[com.idx,])
 
     message("[<<< ChAMP.PairedDMP END >>>]")
     message("[===========================]")
