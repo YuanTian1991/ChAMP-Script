@@ -4,7 +4,7 @@ library("tidyverse")
 library("glue")
 library("magrittr")
 library("stringr")
-
+library(qdapRegex)
 
 manifest_dir <- "./MethylationEPIC v2.0 Files/EPIC-8v2-0_A1.csv"
 assay_line <- which(substr(readLines(manifest_dir),1,7) == "[Assay]")
