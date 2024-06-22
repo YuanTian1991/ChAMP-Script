@@ -82,7 +82,7 @@ probe.features[, cgi:=word(cgi, start = 1, sep="[;]")] %>%
 
 probe.features[, `feat.cgi`:=paste(feature, cgi, sep="-")]
 probe.features <- as.data.frame(probe.features) %>% magrittr::set_rownames(cpg$IlmnID)
-
+probe.features[,1] <- paste("chr",probe.features[,1],sep="")
 save(probe.features, file="probe.features.epicv2.rda")
 
 
